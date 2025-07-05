@@ -1,29 +1,34 @@
-import products from "./products.json";
+#!/usr/bin/env node
+const peliService = require('./pelis');
 
-class Product {
-  constructor(name: string, price: number) {
-    this.name = name;
-    this.price = price;
-  }
-  id: number;
-  name: string;
-  price: number;
-}
+// Sacamos los flags y valores de process.argv
+const args = process.argv.slice(2);
+let searchTerm, tagTerm, sortProp;
 
-class User {
-  constructor(name: string) {
-    this.name = name;
-  }
-  name: string;
-  products: Product[] = [];
-  addProduct(newProduct: Product) {
-    this.products.push(newProduct);
-  }
-  addProducts(newProducts: Product[]) {
-    // esto no funciona:
-    this.products.push(newProducts);
-    // pista: push no suma muchos items (agrega de a uno)
+for (let i = 0; i < args.length; i++) {
+  switch (args[i]) {
+    case '--search':
+      searchTerm = args[i + 1];
+      i++;
+      break;
+    case '--tag':
+      tagTerm = args[i + 1];
+      i++;
+      break;
+    case '--sort':
+      sortProp = args[i + 1];
+      i++;
+      break;
   }
 }
 
-export { User, Product };
+// Cargamos todas las películas
+let pelis = peliService.getAll();
+
+// Aplicamos search → tag → sort si vienen
+if (searchTerm) pelis = peliService.search(searchTerm);
+if (tagTerm)    pelis = peliService.filterByTag(tagTerm);
+if (sortProp)   pelis = peliService.sortBy(sortProp);
+
+// Y mostramos la tabla
+console.table(pelis);
